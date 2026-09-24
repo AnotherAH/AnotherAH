@@ -155,7 +155,7 @@ function banner() {
 }
 
 // ---------------------------------------------------------------- cards
-function card({ tag, title, lines, chips, link, W = 600, art }) {
+function card({ tag, title, lines, chips, link, W = 600, art, wip }) {
   const H = 230;
   let cx = 32;
   const chipSvg = chips.map((c) => {
@@ -177,16 +177,16 @@ function card({ tag, title, lines, chips, link, W = 600, art }) {
 <g clip-path="url(#c)">
   <rect width="${W}" height="${H}" fill="url(#bg)"/>
   ${art ? "" : starfield(W, H, 16, (x, y) => x < W - 130 || y > 150)}
-  <rect width="${W}" height="3" fill="${C.gold}" opacity=".85"/>
+  ${wip ? "" : `<rect width="${W}" height="3" fill="${C.gold}" opacity=".85"/>`}
 </g>
-<rect x=".75" y=".75" width="${W - 1.5}" height="${H - 1.5}" rx="17.5" fill="none" stroke="${C.line2}" stroke-width="1.5"/>
+<rect x=".75" y=".75" width="${W - 1.5}" height="${H - 1.5}" rx="17.5" fill="none" stroke="${wip ? C.gold : C.line2}" stroke-opacity="${wip ? ".45" : "1"}" stroke-width="1.5"${wip ? ' stroke-dasharray="10 8"' : ""}/>
 <rect x="32" y="30" width="${tagW}" height="26" rx="13" fill="${C.gold}" fill-opacity=".12" stroke="${C.gold}" stroke-opacity=".45"/>
 <circle cx="47" cy="43" r="4" fill="${C.gold}"/>
 <text x="59" y="48" font-family="${MONO}" font-size="13" font-weight="700" letter-spacing="1.5" fill="${C.gold}">${esc(tag)}</text>
 <text x="${W - 34}" y="54" text-anchor="end" font-family="${SANS}" font-size="24" fill="${C.gold}">↗</text>
 <text x="32" y="98" font-family="${SANS}" font-size="30" font-weight="800" letter-spacing="-.5" fill="${C.white}">${esc(title)}</text>
 ${lines.map((l, i) => `<text x="32" y="${130 + i * 24}" font-family="${SANS}" font-size="18" fill="${C.muted}">${esc(l)}</text>`).join("")}
-${art === "mark" ? mark(W - 78, 122, 84) : ""}
+${art === "mark" ? `<g opacity="${wip ? ".45" : "1"}">${mark(W - 78, 122, 84)}</g>` : ""}
 ${art === "lockup" ? lockup(W - 60 - Math.round(LOCKUP.w * 112 / LOCKUP.h), 42, 112) : ""}
 ${chipSvg}
 <text x="${W - 32}" y="191" text-anchor="end" font-family="${MONO}" font-size="13" fill="${C.faint}">${esc(link)}</text>
@@ -227,10 +227,15 @@ const cards = {
     lines: ["A hub of free online tools: a blocklist", "checker and more on the way."],
     chips: ["Web", "Cloudflare"], link: "skyver.dev", art: "mark",
   },
-  "card-skyver-labs": {
-    tag: "STUDIO", title: "Skyver Labs",
-    lines: ["My studio for web, UI/UX and software. Everything above ships from here,", "and there is more on the way."],
-    chips: ["Web", "UI/UX", "Software"], link: "skyverlabs.com", W: 1200, art: "lockup",
+  "card-seanema": {
+    tag: "IN PROGRESS", title: "SeaNema",
+    lines: ["A self-hosted media client that works with", "Stremio addons. Windows, Android, Linux, web."],
+    chips: ["Tauri", "Rust", "React", "mpv"], link: "private for now",
+  },
+  "card-under-construction": {
+    tag: "SKYVER LABS", title: "Under construction",
+    lines: ["Something new is being built at Skyver Labs.", "Check back soon."],
+    chips: [], link: "skyverlabs.com", art: "mark", wip: true,
   },
 };
 

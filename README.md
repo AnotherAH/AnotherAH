@@ -31,7 +31,8 @@
   <a href="https://github.com/AnotherAH/media-toolkit"><img src="assets/card-media-toolkit.svg" width="49%" alt="Media Toolkit: download from 1,700+ sites, record live streams, and turn any video into a transcript." /></a>
   <a href="https://skyver.dev"><img src="assets/card-skyver-tools.svg" width="49%" alt="Skyver Tools: a hub of free online tools." /></a>
   <br />
-  <a href="https://skyverlabs.com"><img src="assets/card-skyver-labs.svg" width="98.6%" alt="Skyver Labs: a studio for web, UI/UX and software." /></a>
+  <img src="assets/card-seanema.svg" width="49%" alt="SeaNema: a self-hosted media client that works with Stremio addons, for Windows, Android, Linux and the web. In progress, private for now." />
+  <a href="https://skyverlabs.com"><img src="assets/card-under-construction.svg" width="49%" alt="Under construction: something new is being built at Skyver Labs." /></a>
 </p>
 
 <br />
