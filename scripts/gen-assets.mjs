@@ -155,7 +155,7 @@ function banner() {
 }
 
 // ---------------------------------------------------------------- cards
-function card({ tag, title, lines, chips, link, W = 600, art, wip }) {
+function card({ tag, title, lines, chips, link, W = 600, art, wip, linked = true }) {
   const H = 230;
   let cx = 32;
   const chipSvg = chips.map((c) => {
@@ -183,7 +183,7 @@ function card({ tag, title, lines, chips, link, W = 600, art, wip }) {
 <rect x="32" y="30" width="${tagW}" height="26" rx="13" fill="${C.gold}" fill-opacity=".12" stroke="${C.gold}" stroke-opacity=".45"/>
 <circle cx="47" cy="43" r="4" fill="${C.gold}"/>
 <text x="59" y="48" font-family="${MONO}" font-size="13" font-weight="700" letter-spacing="1.5" fill="${C.gold}">${esc(tag)}</text>
-<text x="${W - 34}" y="54" text-anchor="end" font-family="${SANS}" font-size="24" fill="${C.gold}">↗</text>
+${linked ? `<text x="${W - 34}" y="54" text-anchor="end" font-family="${SANS}" font-size="24" fill="${C.gold}">↗</text>` : ""}
 <text x="32" y="98" font-family="${SANS}" font-size="30" font-weight="800" letter-spacing="-.5" fill="${C.white}">${esc(title)}</text>
 ${lines.map((l, i) => `<text x="32" y="${130 + i * 24}" font-family="${SANS}" font-size="18" fill="${C.muted}">${esc(l)}</text>`).join("")}
 ${art === "mark" ? `<g opacity="${wip ? ".45" : "1"}">${mark(W - 78, 122, 84)}</g>` : ""}
@@ -230,7 +230,7 @@ const cards = {
   "card-seanema": {
     tag: "IN PROGRESS", title: "SeaNema",
     lines: ["A self-hosted media client that works with", "Stremio addons. Windows, Android, Linux, web."],
-    chips: ["Tauri", "Rust", "React", "mpv"], link: "private for now",
+    chips: ["Tauri", "Rust", "React", "mpv"], link: "private for now", linked: false,
   },
   "card-under-construction": {
     tag: "SKYVER LABS", title: "Under construction",

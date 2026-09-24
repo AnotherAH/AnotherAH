@@ -15,7 +15,7 @@
 <rect x="32" y="30" width="129" height="26" rx="13" fill="#F0B44A" fill-opacity=".12" stroke="#F0B44A" stroke-opacity=".45"/>
 <circle cx="47" cy="43" r="4" fill="#F0B44A"/>
 <text x="59" y="48" font-family="'JetBrains Mono', 'Cascadia Code', Consolas, 'DejaVu Sans Mono', Menlo, monospace" font-size="13" font-weight="700" letter-spacing="1.5" fill="#F0B44A">IN PROGRESS</text>
-<text x="566" y="54" text-anchor="end" font-family="Manrope, 'Segoe UI', Ubuntu, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="24" fill="#F0B44A">↗</text>
+
 <text x="32" y="98" font-family="Manrope, 'Segoe UI', Ubuntu, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="30" font-weight="800" letter-spacing="-.5" fill="#F5F3EC">SeaNema</text>
 <text x="32" y="130" font-family="Manrope, 'Segoe UI', Ubuntu, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="18" fill="#9aa0c4">A self-hosted media client that works with</text><text x="32" y="154" font-family="Manrope, 'Segoe UI', Ubuntu, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="18" fill="#9aa0c4">Stremio addons. Windows, Android, Linux, web.</text>
 
