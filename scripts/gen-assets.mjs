@@ -1,16 +1,43 @@
 // Generates the SVG assets for the AnotherAH profile README.
 // Run: node scripts/gen-assets.mjs
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const OUT = join(import.meta.dirname, "..", "assets");
+const BRAND = join(import.meta.dirname, "..", "brand");
+
+// The Skyver Labs mark (Scorpius traced as an S), read from the official icon
+// so the profile always matches the brand files. Coordinates are centred on 0,0.
+const iconSvg = readFileSync(join(BRAND, "skyver-icon-gold-transparent.svg"), "utf8");
+const MARK = {
+  points: iconSvg.match(/<polyline points="([^"]+)"/)[1].split(" ").map((p) => p.split(",").map(Number)),
+  stars: [...iconSvg.matchAll(/<circle cx="([-\d.]+)" cy="([-\d.]+)" r="([\d.]+)" fill="(#[0-9A-Fa-f]+)"( fill-opacity)?/g)]
+    .filter((m) => !m[5])
+    .map((m) => ({ x: +m[1], y: +m[2], r: +m[3], fill: m[4] })),
+};
+const ANTARES = MARK.stars.find((s) => s.fill.toUpperCase() === "#E8843A");
+
+// The official horizontal lockup (mark + outlined "skyver labs" wordmark).
+const lockupSvg = readFileSync(join(BRAND, "skyver-lockup-horizontal-gold-transparent.svg"), "utf8");
+const LOCKUP = {
+  w: +lockupSvg.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/)[1],
+  h: +lockupSvg.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/)[2],
+  inner: lockupSvg.replace(/^<svg[^>]*>/, "").replace(/<\/svg>\s*$/, ""),
+};
+const lockup = (x, y, height) => `<g transform="translate(${x},${y}) scale(${(height / LOCKUP.h).toFixed(4)})">${LOCKUP.inner}</g>`;
+
+// A static copy of the mark, centred on cx,cy, `height` px tall.
+function mark(cx, cy, height) {
+  const s = height / 86;
+  return `<g transform="translate(${cx},${cy}) scale(${s.toFixed(4)})"><polyline points="${MARK.points.map((p) => p.join(",")).join(" ")}" fill="none" stroke="${"#F0B44A"}" stroke-opacity=".35" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/>${MARK.stars.map((st) => (st === ANTARES ? `<circle cx="${st.x}" cy="${st.y}" r="8.8" fill="#E8843A" fill-opacity=".22"/>` : "") + `<circle cx="${st.x}" cy="${st.y}" r="${st.r}" fill="${st.fill}"/>`).join("")}</g>`;
+}
 
 const C = {
   navy: "#141B3A", navy2: "#10162e", panel: "#1a2246", line: "#2a3363", line2: "#3a4478",
   white: "#F5F3EC", muted: "#9aa0c4", faint: "#6a7099",
   gold: "#F0B44A", goldSoft: "#F3D08A", antares: "#E8843A",
 };
-const SANS = `'Segoe UI', Ubuntu, 'Helvetica Neue', Helvetica, Arial, sans-serif`;
+const SANS = `Manrope, 'Segoe UI', Ubuntu, 'Helvetica Neue', Helvetica, Arial, sans-serif`;
 const MONO = `'JetBrains Mono', 'Cascadia Code', Consolas, 'DejaVu Sans Mono', Menlo, monospace`;
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
@@ -35,21 +62,16 @@ function starfield(w, h, n, avoid = () => false) {
 function banner() {
   const W = 1200, H = 320;
 
-  // Scorpius, drawn to fit the right side of the banner.
-  const S = {
-    nu: [1086, 52], beta: [1120, 64], delta: [1140, 104], pi: [1130, 146],
-    sigma: [1084, 116], alpha: [1050, 134], tau: [1020, 156], eps: [992, 194],
-    mu: [978, 230], zeta: [968, 262], eta: [934, 280], theta: [894, 276],
-    iota: [864, 254], kappa: [872, 224], lambda: [902, 212], upsilon: [918, 222],
-  };
-  const chain = (...ks) => ks.map((k) => S[k].join(",")).join(" ");
-  const lines = [
-    chain("nu", "beta", "delta", "pi"),
-    chain("delta", "sigma", "alpha", "tau", "eps", "mu", "zeta", "eta", "theta", "iota", "kappa", "lambda", "upsilon"),
-  ];
-  const stars = Object.entries(S).filter(([k]) => k !== "alpha").map(([k, [x, y]], i) =>
-    `<circle cx="${x}" cy="${y}" r="${["beta", "delta", "lambda", "theta", "eps"].includes(k) ? 3.4 : 2.6}" fill="${C.goldSoft}" class="cs" style="animation-delay:${(0.4 + i * 0.09).toFixed(2)}s"/>`
-  ).join("");
+  // The Skyver mark, large, on the right side of the banner.
+  const MX = 1030, MY = 160, MS = 2.75;
+  const at = (x, y) => [+(MX + x * MS).toFixed(1), +(MY + y * MS).toFixed(1)];
+  const lines = [MARK.points.map(([x, y]) => at(x, y).join(",")).join(" ")];
+  const stars = MARK.stars.filter((st) => st !== ANTARES).map((st, i) => {
+    const [x, y] = at(st.x, st.y);
+    return `<circle cx="${x}" cy="${y}" r="${(st.r * 1.5).toFixed(2)}" fill="${st.fill}" class="cs" style="animation-delay:${(0.4 + i * 0.12).toFixed(2)}s"/>`;
+  }).join("");
+  const alpha = at(ANTARES.x, ANTARES.y);
+  const S = { alpha };
 
   // Typing line.
   const phrases = [
@@ -81,7 +103,7 @@ function banner() {
   cursorPts.push([T, X0 + 3]);
   const cursor = `<rect y="${Y0 - 19}" width="11" height="23" rx="1.5" fill="${C.gold}" class="blink"><animate attributeName="x" dur="${T}s" repeatCount="indefinite" calcMode="discrete" keyTimes="${cursorPts.map((q) => kt(q[0])).join(";")}" values="${cursorPts.map((q) => q[1]).join(";")}"/></rect>`;
 
-  const avoidText = (x, y) => (x < 760 && y > 50 && y < 275) || (x > 840 && x < 1170 && y > 36 && y < 296 && rnd() < 0.6);
+  const avoidText = (x, y) => (x < 760 && y > 50 && y < 275) || (x > 950 && x < 1110 && y > 30 && y < 290 && rnd() < 0.7);
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="t d">
 <title id="t">Hey, I'm AH</title>
@@ -96,7 +118,7 @@ function banner() {
 <style>
   .tw{animation:tw ease-in-out infinite alternate}
   @keyframes tw{from{opacity:.15}to{opacity:.95}}
-  .cl{fill:none;stroke:${C.gold};stroke-opacity:.55;stroke-width:1.4;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:draw 2.6s .3s cubic-bezier(.4,0,.2,1) forwards}
+  .cl{fill:none;stroke:${C.gold};stroke-opacity:.45;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:draw 2.6s .3s cubic-bezier(.4,0,.2,1) forwards}
   @keyframes draw{to{stroke-dashoffset:0}}
   .cs{opacity:0;animation:pop .5s ease-out forwards}
   @keyframes pop{to{opacity:1}}
@@ -115,8 +137,8 @@ function banner() {
   <circle cx="${S.alpha[0]}" cy="${S.alpha[1]}" r="46" fill="url(#glow)" class="ant"/>
   ${lines.map((l) => `<polyline class="cl" pathLength="1" points="${l}"/>`).join("")}
   ${stars}
-  <circle cx="${S.alpha[0]}" cy="${S.alpha[1]}" r="5.2" fill="${C.antares}"/>
-  <text x="${S.alpha[0] - 14}" y="${S.alpha[1] + 5}" text-anchor="end" font-family="${MONO}" font-size="12" letter-spacing="2" fill="${C.antares}" opacity=".8" class="up" style="animation-delay:2.4s">ANTARES</text>
+  <circle cx="${S.alpha[0]}" cy="${S.alpha[1]}" r="7" fill="${C.antares}"/>
+  <text x="${S.alpha[0] + 20}" y="${S.alpha[1] + 5}" font-family="${MONO}" font-size="12" letter-spacing="2" fill="${C.antares}" opacity=".8" class="up" style="animation-delay:2.4s">ANTARES</text>
 </g>
 <rect x=".75" y=".75" width="${W - 1.5}" height="${H - 1.5}" rx="21.5" fill="none" stroke="${C.line2}" stroke-width="1.5"/>
 <g class="up" style="animation-delay:.1s"><text x="72" y="84" font-family="${MONO}" font-size="17" fill="${C.goldSoft}"><tspan fill="${C.faint}">~/skyver-labs</tspan> $ whoami</text></g>
@@ -133,7 +155,7 @@ function banner() {
 }
 
 // ---------------------------------------------------------------- cards
-function card({ tag, title, lines, chips, link, W = 600 }) {
+function card({ tag, title, lines, chips, link, W = 600, art }) {
   const H = 230;
   let cx = 32;
   const chipSvg = chips.map((c) => {
@@ -154,7 +176,7 @@ function card({ tag, title, lines, chips, link, W = 600 }) {
 <style>.tw{animation:tw ease-in-out infinite alternate}@keyframes tw{from{opacity:.1}to{opacity:.8}}@media (prefers-reduced-motion:reduce){.tw{animation:none}}</style>
 <g clip-path="url(#c)">
   <rect width="${W}" height="${H}" fill="url(#bg)"/>
-  ${starfield(W, H, 16, (x, y) => x < W - 130 || y > 150)}
+  ${art ? "" : starfield(W, H, 16, (x, y) => x < W - 130 || y > 150)}
   <rect width="${W}" height="3" fill="${C.gold}" opacity=".85"/>
 </g>
 <rect x=".75" y=".75" width="${W - 1.5}" height="${H - 1.5}" rx="17.5" fill="none" stroke="${C.line2}" stroke-width="1.5"/>
@@ -164,6 +186,8 @@ function card({ tag, title, lines, chips, link, W = 600 }) {
 <text x="${W - 34}" y="54" text-anchor="end" font-family="${SANS}" font-size="24" fill="${C.gold}">↗</text>
 <text x="32" y="98" font-family="${SANS}" font-size="30" font-weight="800" letter-spacing="-.5" fill="${C.white}">${esc(title)}</text>
 ${lines.map((l, i) => `<text x="32" y="${130 + i * 24}" font-family="${SANS}" font-size="18" fill="${C.muted}">${esc(l)}</text>`).join("")}
+${art === "mark" ? mark(W - 78, 122, 84) : ""}
+${art === "lockup" ? lockup(W - 60 - Math.round(LOCKUP.w * 112 / LOCKUP.h), 42, 112) : ""}
 ${chipSvg}
 <text x="${W - 32}" y="191" text-anchor="end" font-family="${MONO}" font-size="13" fill="${C.faint}">${esc(link)}</text>
 </svg>
@@ -172,7 +196,7 @@ ${chipSvg}
 
 // ---------------------------------------------------------------- footer
 function footer() {
-  const W = 1200, H = 110;
+  const W = 1200, H = 160;
   seed = 424242;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Skyver Labs">
 <defs>
@@ -186,8 +210,8 @@ function footer() {
   <path d="M0 ${H} Q ${W / 2} ${H - 70} ${W} ${H}" fill="${C.gold}" opacity=".07"/>
 </g>
 <rect x=".75" y=".75" width="${W - 1.5}" height="${H - 1.5}" rx="17.5" fill="none" stroke="${C.line2}" stroke-width="1.5"/>
-<text x="${W / 2}" y="52" text-anchor="middle" font-family="${SANS}" font-size="22" font-weight="700" fill="${C.white}">Thanks for stopping by<tspan fill="${C.gold}">.</tspan></text>
-<text x="${W / 2}" y="80" text-anchor="middle" font-family="${MONO}" font-size="14" letter-spacing="3" fill="${C.muted}">SKYVER LABS · WEB · UI/UX · SOFTWARE</text>
+${lockup(Math.round(W / 2 - (LOCKUP.w * 76 / LOCKUP.h) / 2), 22, 76)}
+<text x="${W / 2}" y="126" text-anchor="middle" font-family="${SANS}" font-size="20" font-weight="600" fill="${C.muted}">Thanks for stopping by<tspan fill="${C.gold}">.</tspan></text>
 </svg>
 `;
 }
@@ -201,12 +225,12 @@ const cards = {
   "card-skyver-tools": {
     tag: "LIVE", title: "Skyver Tools",
     lines: ["A hub of free online tools: a blocklist", "checker and more on the way."],
-    chips: ["Web", "Cloudflare"], link: "skyver.dev",
+    chips: ["Web", "Cloudflare"], link: "skyver.dev", art: "mark",
   },
   "card-skyver-labs": {
     tag: "STUDIO", title: "Skyver Labs",
     lines: ["My studio for web, UI/UX and software. Everything above ships from here,", "and there is more on the way."],
-    chips: ["Web", "UI/UX", "Software"], link: "skyverlabs.com", W: 1200,
+    chips: ["Web", "UI/UX", "Software"], link: "skyverlabs.com", W: 1200, art: "lockup",
   },
 };
 
