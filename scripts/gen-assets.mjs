@@ -73,47 +73,16 @@ function banner() {
   const alpha = at(ANTARES.x, ANTARES.y);
   const S = { alpha };
 
-  // Typing line.
-  const phrases = [
-    "keeping Linux servers boring & reliable",
-    "building web, UI/UX and software",
-    "turning any video into a transcript",
-    "self-hosting everything I can",
-  ];
-  const CW = 12, X0 = 100, Y0 = 250, SLOT = 4.2, T = SLOT * phrases.length;
-  const TYPE = 0.055, BACK = 0.018, HOLD_END = 3.2;
-  const kt = (t) => (t / T).toFixed(5);
-
-  const cursorPts = []; // [time, x]
-  let typing = "", clips = "";
-  phrases.forEach((p, i) => {
-    const n = p.length, t0 = i * SLOT, pts = [[0, 0]];
-    pts.push([t0, 0]);
-    for (let c = 1; c <= n; c++) pts.push([t0 + c * TYPE, c * CW]);
-    const eraseAt = t0 + HOLD_END;
-    for (let c = n - 1; c >= 0; c--) pts.push([eraseAt + (n - c) * BACK, c * CW]);
-    pts.push([T, 0]);
-    // collapse to strictly usable lists
-    const times = pts.map((q) => kt(q[0])).join(";"), vals = pts.map((q) => q[1]).join(";");
-    clips += `<clipPath id="p${i}"><rect x="${X0}" y="${Y0 - 24}" height="34" width="0"><animate attributeName="width" dur="${T}s" repeatCount="indefinite" calcMode="discrete" keyTimes="${times}" values="${vals}"/></rect></clipPath>`;
-    typing += `<text x="${X0}" y="${Y0}" clip-path="url(#p${i})" textLength="${n * CW}" lengthAdjust="spacingAndGlyphs" class="type">${esc(p)}</text>`;
-    pts.slice(1, -1).forEach(([t, w]) => cursorPts.push([t, X0 + w + 3]));
-  });
-  cursorPts.unshift([0, X0 + 3]);
-  cursorPts.push([T, X0 + 3]);
-  const cursor = `<rect y="${Y0 - 19}" width="11" height="23" rx="1.5" fill="${C.gold}" class="blink"><animate attributeName="x" dur="${T}s" repeatCount="indefinite" calcMode="discrete" keyTimes="${cursorPts.map((q) => kt(q[0])).join(";")}" values="${cursorPts.map((q) => q[1]).join(";")}"/></rect>`;
-
-  const avoidText = (x, y) => (x < 760 && y > 50 && y < 275) || (x > 950 && x < 1110 && y > 30 && y < 290 && rnd() < 0.7);
+  const avoidText = (x, y) => (x < 760 && y > 60 && y < 260) || (x > 950 && x < 1110 && y > 30 && y < 290 && rnd() < 0.7);
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="t d">
 <title id="t">Hey, I'm AH</title>
-<desc id="d">Linux engineer building Skyver Labs, based in Canada.</desc>
+<desc id="d">Linux engineer. I run my own servers and build the software on them, mostly under Skyver Labs.</desc>
 <defs>
   <radialGradient id="sky" cx="72%" cy="-10%" r="95%"><stop offset="0" stop-color="#24306a"/><stop offset=".55" stop-color="${C.navy}"/><stop offset="1" stop-color="${C.navy2}"/></radialGradient>
   <radialGradient id="glow"><stop offset="0" stop-color="${C.antares}" stop-opacity=".75"/><stop offset=".35" stop-color="${C.antares}" stop-opacity=".22"/><stop offset="1" stop-color="${C.antares}" stop-opacity="0"/></radialGradient>
   <linearGradient id="rule" x1="0" x2="1"><stop offset="0" stop-color="${C.gold}"/><stop offset="1" stop-color="${C.gold}" stop-opacity="0"/></linearGradient>
   <clipPath id="card"><rect width="${W}" height="${H}" rx="22"/></clipPath>
-  ${clips}
 </defs>
 <style>
   .tw{animation:tw ease-in-out infinite alternate}
@@ -126,9 +95,6 @@ function banner() {
   @keyframes pulse{0%,100%{transform:scale(.85);opacity:.75}50%{transform:scale(1.15);opacity:1}}
   .up{opacity:0;animation:up .8s cubic-bezier(.2,.7,.2,1) forwards}
   @keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-  .type{font:500 20px ${MONO};fill:${C.white}}
-  .blink{animation:blink 1s steps(1) infinite}
-  @keyframes blink{50%{opacity:0}}
   @media (prefers-reduced-motion:reduce){.tw,.cl,.cs,.ant,.up{animation:none;opacity:1;stroke-dashoffset:0}}
 </style>
 <g clip-path="url(#card)">
@@ -141,14 +107,11 @@ function banner() {
   <text x="${S.alpha[0] + 20}" y="${S.alpha[1] + 5}" font-family="${MONO}" font-size="12" letter-spacing="2" fill="${C.antares}" opacity=".8" class="up" style="animation-delay:2.4s">ANTARES</text>
 </g>
 <rect x=".75" y=".75" width="${W - 1.5}" height="${H - 1.5}" rx="21.5" fill="none" stroke="${C.line2}" stroke-width="1.5"/>
-<g class="up" style="animation-delay:.1s"><text x="72" y="84" font-family="${MONO}" font-size="17" fill="${C.goldSoft}"><tspan fill="${C.faint}">~/skyver-labs</tspan> $ whoami</text></g>
-<g class="up" style="animation-delay:.3s"><text x="68" y="152" font-family="${SANS}" font-size="64" font-weight="800" letter-spacing="-1.5" fill="${C.white}">Hey, I’m AH<tspan fill="${C.gold}">.</tspan></text></g>
-<g class="up" style="animation-delay:.5s"><text x="72" y="194" font-family="${SANS}" font-size="22" font-weight="500" fill="${C.muted}">Linux engineer <tspan fill="${C.gold}">·</tspan> building Skyver Labs <tspan fill="${C.gold}">·</tspan> Canada</text>
-<rect x="72" y="212" width="260" height="2" fill="url(#rule)" rx="1"/></g>
-<g class="up" style="animation-delay:.7s">
-  <text x="72" y="${Y0}" font-family="${MONO}" font-size="20" font-weight="700" fill="${C.gold}">&gt;</text>
-  ${typing}
-  ${cursor}
+<g class="up" style="animation-delay:.2s"><text x="68" y="138" font-family="${SANS}" font-size="64" font-weight="800" letter-spacing="-1.5" fill="${C.white}">Hey, I’m AH<tspan fill="${C.gold}">.</tspan></text></g>
+<g class="up" style="animation-delay:.45s" font-family="${SANS}" font-size="23" font-weight="500" fill="${C.muted}">
+  <text x="72" y="190"><tspan fill="${C.white}">Linux engineer.</tspan> I run my own servers and build</text>
+  <text x="72" y="222">the software on them, mostly under Skyver Labs.</text>
+  <rect x="72" y="246" width="260" height="2" fill="url(#rule)" rx="1"/>
 </g>
 </svg>
 `;
@@ -196,7 +159,7 @@ ${chipSvg}
 
 // ---------------------------------------------------------------- footer
 function footer() {
-  const W = 1200, H = 160;
+  const W = 1200, H = 130;
   seed = 424242;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Skyver Labs">
 <defs>
@@ -210,8 +173,7 @@ function footer() {
   <path d="M0 ${H} Q ${W / 2} ${H - 70} ${W} ${H}" fill="${C.gold}" opacity=".07"/>
 </g>
 <rect x=".75" y=".75" width="${W - 1.5}" height="${H - 1.5}" rx="17.5" fill="none" stroke="${C.line2}" stroke-width="1.5"/>
-${lockup(Math.round(W / 2 - (LOCKUP.w * 76 / LOCKUP.h) / 2), 22, 76)}
-<text x="${W / 2}" y="126" text-anchor="middle" font-family="${SANS}" font-size="20" font-weight="600" fill="${C.muted}">Thanks for stopping by<tspan fill="${C.gold}">.</tspan></text>
+${lockup(Math.round(W / 2 - (LOCKUP.w * 84 / LOCKUP.h) / 2), 23, 84)}
 </svg>
 `;
 }
@@ -224,7 +186,7 @@ const cards = {
   },
   "card-skyver-tools": {
     tag: "LIVE", title: "Skyver Tools",
-    lines: ["A hub of free online tools: a blocklist", "checker and more on the way."],
+    lines: ["Free online tools, starting with a", "blocklist checker."],
     chips: ["Web", "Cloudflare"], link: "skyver.dev", art: "mark",
   },
   "card-seanema": {
@@ -233,9 +195,9 @@ const cards = {
     chips: ["Tauri", "Rust", "React", "mpv"], link: "private for now", linked: false,
   },
   "card-under-construction": {
-    tag: "SKYVER LABS", title: "Under construction",
-    lines: ["Something new is being built at Skyver Labs.", "Check back soon."],
-    chips: [], link: "skyverlabs.com", art: "mark", wip: true,
+    tag: "SOON", title: "Under construction",
+    lines: ["The next project. Not ready to show yet."],
+    chips: [], link: "", art: "mark", wip: true, linked: false,
   },
 };
 
